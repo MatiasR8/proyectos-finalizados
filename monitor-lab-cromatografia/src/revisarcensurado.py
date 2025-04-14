@@ -77,165 +77,9 @@ def buscar_carpeta(ruta_local, fecha_batch):
     # 1. Ajusta formato de fecha (ej: "25-06-2024" → "25-06-24").
     # 2. Busca en el mes actual y, si no hay resultados, en el mes anterior.
     # 3. Filtra carpetas que coincidan con los patrones `patterns`.
-    idsiguiente = 1
-    fecha_carpeta = 0
-    carpetas_con_formato = []
-    if re.match(r"\d{2}-\d{2}-\d{4}", fecha_batch):
-        # Extraer los últimos 2 dígitos del año
-        fecha_batch = re.sub(r"(\d{2}-\d{2}-)\d{2}(\d{2})", r"\1\2", fecha_batch)
-    fecha_actual = datetime.strptime(fecha_batch, "%d-%m-%y")
-    n = 0
-    dia, mes, año = fecha_batch.split('-')
-    mes_formateado = f"{mes}.{meses[mes]}"
-    fecha_batch2 = f"20{año}-{mes}-{dia}"
-    nombre_batch = f"Secuencia {fecha_batch2}"
-    ruta_mes_actual = os.path.join(ruta_local, mes_formateado)
+    """Ejemplo censurado: No implementa búsqueda real. Para más información contacta conmigo"""
 
-    # Primero buscamos en el mes actual si existe
-    if os.path.exists(ruta_mes_actual):
-        ruta_local_mes_actual = ruta_mes_actual
-        fecha_inicial = fecha_actual
-        
-        # Buscar en el mes actual (día actual y días anteriores)
-        while not carpetas_con_formato and n < 31:  # Mientras no haya carpetas válidas
-            # Buscar carpetas que coincidan con el nombre del batch
-            carpetas_batch = [
-                carpeta for carpeta in os.listdir(ruta_local_mes_actual)
-                if os.path.isdir(os.path.join(ruta_local_mes_actual, carpeta)) and carpeta.startswith(nombre_batch)
-            ]
-
-            if carpetas_batch:
-                for carpeta in carpetas_batch:
-                    carpeta_batch = os.path.join(ruta_local_mes_actual, carpeta)
-
-                # Buscar carpetas que coincidan con el formato
-                for nombre_carpeta in os.listdir(carpeta_batch):
-                    ruta_carpeta = os.path.join(carpeta_batch, nombre_carpeta)
-                    if os.path.isdir(ruta_carpeta):
-                        for pattern in [r'^(Set_CG-\d{3}-a_(Front|Back)_\d{2}-\d{2}-\d{2}).*$', r'^Set_Desglose_(Front|Back)_\d{2}-\d{2}-\d{2}.*$']:
-                            if re.match(pattern, nombre_carpeta, re.IGNORECASE):
-                                for archivo in os.listdir(ruta_carpeta):
-                                    if re.match(r'^\d{2}-\d{2}-\d{2}_TPH.*\.dx$', archivo):
-                                        fecha_creacion = os.path.getctime(os.path.join(ruta_carpeta, archivo))
-                                        carpetas_con_formato.append((archivo, fecha_creacion, os.path.join(ruta_carpeta, archivo)))
-                    for pattern in patterns:
-                        match = re.search(pattern, nombre_carpeta, re.IGNORECASE)
-                        if match:
-                            fecha_creacion = os.path.getctime(ruta_carpeta)
-                            carpetas_con_formato.append((nombre_carpeta, fecha_creacion, ruta_carpeta))
-
-            if not carpetas_con_formato:
-                # Restar un día a la fecha actual
-                fecha_inicial -= timedelta(days=1)
-                fecha_batch = fecha_inicial.strftime("%d-%m-%y")
-                fecha_batch2 = fecha_inicial.strftime("%Y-%m-%d")
-                nombre_batch = f"Secuencia {fecha_batch2}"
-                n = n + 1
-                fecha_carpeta = fecha_inicial.strftime("%d-%m-%y")
-                idsiguiente = 0
-        
-        # Si no encontramos nada en el mes actual, buscamos en el mes anterior
-        if not carpetas_con_formato:
-            try:
-                fecha_mes_anterior = fecha_actual - relativedelta(months=1)
-                mes_anterior = fecha_mes_anterior.strftime("%m")
-                mes_formateado_anterior = f"{mes_anterior}.{meses[mes_anterior]}"
-                ruta_mes_anterior = os.path.join(ruta_local, mes_formateado_anterior)
-                
-                if os.path.exists(ruta_mes_anterior):
-                    # Buscar la última carpeta válida en el mes anterior
-                    ruta_local_mes_anterior = ruta_mes_anterior
-                    try:
-                        fecha_inicial = fecha_mes_anterior.replace(day=31)  # Empezamos por el último día del mes
-                    except:
-                        try:
-                            fecha_inicial = fecha_mes_anterior.replace(day=30)
-                        except:
-                            fecha_inicial = fecha_mes_anterior.replace(day=28)     
-                               
-                    # Resetear variables para búsqueda en mes anterior
-                    carpetas_con_formato = []
-                    n = 0
-                    
-                    while not carpetas_con_formato and n < 31:  # Máximo 31 días en un mes
-                        nombre_batch_anterior = f"Secuencia {fecha_inicial.strftime('%Y-%m-%d')}"
-                        
-                        carpetas_batch = [
-                            carpeta for carpeta in os.listdir(ruta_local_mes_anterior)
-                            if os.path.isdir(os.path.join(ruta_local_mes_anterior, carpeta)) and carpeta.startswith(nombre_batch_anterior)
-                        ]
-                        
-                        if carpetas_batch:
-                            for carpeta in carpetas_batch:
-                                carpeta_batch = os.path.join(ruta_local_mes_anterior, carpeta)
-                            
-                            for nombre_carpeta in os.listdir(carpeta_batch):
-                                ruta_carpeta = os.path.join(carpeta_batch, nombre_carpeta)
-                                for pattern in patterns:
-                                    match = re.search(pattern, nombre_carpeta, re.IGNORECASE)
-                                    if match:
-                                        fecha_creacion = os.path.getctime(ruta_carpeta)
-                                        carpetas_con_formato.append((nombre_carpeta, fecha_creacion, ruta_carpeta))
-                                        fecha_carpeta = fecha_inicial.strftime("%d-%m-%y")
-                                        idsiguiente = 0
-                        
-                        if not carpetas_con_formato:
-                            fecha_inicial -= timedelta(days=1)
-                            n += 1
-            except Exception as e:
-                print(f"Error al buscar en el mes anterior: {e}")
-                print("Traceback completo:")
-                traceback.print_exc()
-    else:
-        # Si no existe el mes actual, buscar directamente en el mes anterior
-        try:
-            fecha_mes_anterior = fecha_actual - relativedelta(months=1)
-            mes_anterior = fecha_mes_anterior.strftime("%m")
-            mes_formateado_anterior = f"{mes_anterior}.{meses[mes_anterior]}"
-            ruta_mes_anterior = os.path.join(ruta_local, mes_formateado_anterior)
-            
-            if os.path.exists(ruta_mes_anterior):
-                # Buscar la última carpeta válida en el mes anterior
-                ruta_local_mes_anterior = ruta_mes_anterior
-                try:
-                    fecha_inicial = fecha_mes_anterior.replace(day=31)  # Empezamos por el último día del mes
-                except:
-                    try:
-                        fecha_inicial = fecha_mes_anterior.replace(day=30)
-                    except:
-                        fecha_inicial = fecha_mes_anterior.replace(day=28)     
-                
-                while not carpetas_con_formato and n < 31:  # Máximo 31 días en un mes
-                    nombre_batch_anterior = f"Secuencia {fecha_inicial.strftime('%Y-%m-%d')}"
-                    
-                    carpetas_batch = [
-                        carpeta for carpeta in os.listdir(ruta_local_mes_anterior)
-                        if os.path.isdir(os.path.join(ruta_local_mes_anterior, carpeta)) and carpeta.startswith(nombre_batch_anterior)
-                    ]
-                    
-                    if carpetas_batch:
-                        for carpeta in carpetas_batch:
-                            carpeta_batch = os.path.join(ruta_local_mes_anterior, carpeta)
-                        
-                        for nombre_carpeta in os.listdir(carpeta_batch):
-                            ruta_carpeta = os.path.join(carpeta_batch, nombre_carpeta)
-                            for pattern in patterns:
-                                match = re.search(pattern, nombre_carpeta, re.IGNORECASE)
-                                if match:
-                                    fecha_creacion = os.path.getctime(ruta_carpeta)
-                                    carpetas_con_formato.append((nombre_carpeta, fecha_creacion, ruta_carpeta))
-                                    fecha_carpeta = fecha_inicial.strftime("%d-%m-%y")
-                                    idsiguiente = 0
-                    
-                    if not carpetas_con_formato:
-                        fecha_inicial -= timedelta(days=1)
-                        n += 1
-        except Exception as e:
-            print(f"Error al buscar en el mes anterior: {e}")
-            print("Traceback completo:")
-            traceback.print_exc()
-
-    return carpetas_con_formato, idsiguiente, fecha_carpeta  
+    return [], 0, "01-01-2000"
 
 # Definir las rutas por sección
 def obtener_rutas(seccion, fecha, metodo, metodo_liquidos):
@@ -279,16 +123,16 @@ def obtener_rutas(seccion, fecha, metodo, metodo_liquidos):
     if seccion == "Semivol":
         return {
             "rutas": {
-                "CS-4332": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 30, 
+                "EQ-001": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 30, 
                             "xml":r"\\ruta-red\d\MassHunter\GCMS\1\sequence\default.sequence.xml",
                             "local": rf"\\ruta-red\d\Data file\{año}"},
-                "CS-4716": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 30, 
+                "EQ-002": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 30, 
                             "xml":r"\\ruta-red\d\MassHunter\GCMS\1\sequence\SEMIVOL.sequence.xml",
                             "local": rf"\\ruta-red\d\DataFile\{año}"},
-                "CS-4939": {"ruta": r"\\ruta-red\d (qqq-3)\MassHunter\GCMS\1", "tiempo_inyeccion": 30, 
+                "EQ-003": {"ruta": r"\\ruta-red\d (qqq-3)\MassHunter\GCMS\1", "tiempo_inyeccion": 30, 
                             "xml":r"\\ruta-red\d (qqq-3)\MassHunter\GCMS\1\sequence\Semivol.sequence.xml",
                             "local": rf"\\ruta-red\d (qqq-3)\Data file\{año}"}, 
-                "CS-5144": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 30, 
+                "EQ-004": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 30, 
                             "xml":r"\\ruta-red\d\MassHunter\GCMS\1\sequence\Semivolatiles.sequence.xml",
                             "local": rf"\\ruta-red\d\Data\{año}"}
             }
@@ -296,105 +140,105 @@ def obtener_rutas(seccion, fecha, metodo, metodo_liquidos):
     elif seccion == "Twister":
         return {
             "rutas": {
-                "CS-1037": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 75,
+                "EQ-005": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 75,
                             "local": rf"\\ruta-red\d\Data File\Secuencias CGM-019-a\Secuencias {año}",
                             "xml2":r"\\ruta-red\d\MassHunter\GCMS\1\sequence\SEMIVOLATILES.SEQUENCE.xml",
                             "xml":r"\\ruta-red\C\GCMS\Msexe\masont_1.sequence.xml"},
-                "CS-1342": {"ruta": r"\\ruta-red\D\MassHunter\GCMS\1", "tiempo_inyeccion": 75,
+                "EQ-006": {"ruta": r"\\ruta-red\D\MassHunter\GCMS\1", "tiempo_inyeccion": 75,
                             "local": rf"\\ruta-red\D\Secuencias CGM-019-a\Secuencias {año}",
                             "xml":r"\\ruta-red\D\MassHunter\GCMS\1\sequence\Semivolátiles.sequence.xml",},
-                "CS-1804": {"ruta": r"\\ruta-red\D\MassHunter\GCMS\1", "tiempo_inyeccion": 50,
+                "EQ-007": {"ruta": r"\\ruta-red\D\MassHunter\GCMS\1", "tiempo_inyeccion": 50,
                             "local": rf"\\ruta-red\D\Data file\Secuencias CGM-031-a\Secuencias {año}",
                             "xml2":r"\\ruta-red\D\MassHunter\GCMS\1\sequence\TWISTER-CPTOS SEMIVOLATILES.sequence.xml",
                             "xml":r"\\ruta-red\C\GCMS\Msexe\masont_1.sequence.xml"},
-                "CS-3013": {"ruta": r"\\ruta-red\d (cs-3013)\MassHunter\GCMS\1", "tiempo_inyeccion": 50,
-                            "local": rf"\\ruta-red\d (cs-3013)\Data file\Secuencias CGM-031-a\Secuencias {año}",
-                            "xml2":r"\\ruta-red\d (cs-3013)\MassHunter\GCMS\1\sequence\SEMIVOLATILES.SEQUENCE.xml",
+                "EQ-008": {"ruta": r"\\ruta-red\d (EQ-008)\MassHunter\GCMS\1", "tiempo_inyeccion": 50,
+                            "local": rf"\\ruta-red\d (EQ-008)\Data file\Secuencias CGM-031-a\Secuencias {año}",
+                            "xml2":r"\\ruta-red\d (EQ-008)\MassHunter\GCMS\1\sequence\SEMIVOLATILES.SEQUENCE.xml",
                             "xml":r"\\ruta-red\C\GCMS\Msexe\masont_1.sequence.xml"},
-                "CS-4658": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 69,
+                "EQ-009": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 69,
                             "local": rf"\\ruta-red\d\Secuencias {año}",
                             "xml2":r"\\ruta-red\d\MassHunter\GCMS\1\sequence\SEMIVOLATILES.SEQUENCE.xml",  
                             "xml":r"\\ruta-red\c\gcms\MSexe\masont_1.sequence.xml"},                            
-                "CS-5002": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 50,
+                "EQ-010": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 50,
                             "local": rf"\\ruta-red\d\DATA FILE\Secuencias {año}",
                             "xml2":r"\\ruta-red\d\MassHunter\GCMS\1\sequence\Secuencia semivolatiles.SEQUENCE.xml",
                             "xml":r"\\ruta-red\c\GCMS\Msexe\masont_1.sequence.xml"},
-                "CS-5042": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 21,
-                            "local": rf"\\ruta-red\d\CS-5042\Data\CGM-011-a\{año}",
-                            "local2": rf"\\ruta-red\d\CS-5042\Data\CGM-009-a\{año}",
-                            "xml":r"\\ruta-red\d\CS-5042\Sequence\CGM-011-a.sequence.xml",
-                            "xml2":r"\\ruta-red\d\CS-5042\Sequence\CGM-009-a.sequence.xml",
-                            "xml3":r"\\ruta-red\d\CS-5042\Sequence\CGM-009-a y 022.sequence.xml"}
+                "EQ-011": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 21,
+                            "local": rf"\\ruta-red\d\EQ-011\Data\CGM-011-a\{año}",
+                            "local2": rf"\\ruta-red\d\EQ-011\Data\CGM-009-a\{año}",
+                            "xml":r"\\ruta-red\d\EQ-011\Sequence\CGM-011-a.sequence.xml",
+                            "xml2":r"\\ruta-red\d\EQ-011\Sequence\CGM-009-a.sequence.xml",
+                            "xml3":r"\\ruta-red\d\EQ-011\Sequence\CGM-009-a y 022.sequence.xml"}
             }
         }
     elif seccion == "Volátiles":
         return {
             "rutas": {
-                "CS-3194": {"ruta": r"\\ruta-red\D\MassHunter\GCMS\1", "tiempo_inyeccion": 24,
+                "EQ-012": {"ruta": r"\\ruta-red\D\MassHunter\GCMS\1", "tiempo_inyeccion": 24,
                             "excel":rf"\\ruta-red\D\Agilent 3194-3195\Data\{año}\HS",
                             "xml":r"\\ruta-red\c\GCMS\Msexe\masont_1.sequence.xml"},
-                "CS-4102": {"ruta": r"\\ruta-red\D\MassHunter\GCMS\1", "tiempo_inyeccion": 28,
+                "EQ-013": {"ruta": r"\\ruta-red\D\MassHunter\GCMS\1", "tiempo_inyeccion": 28,
                             "excel":rf"\\ruta-red\cs-4101-4102\Data\{año}",
                             "xml":r"\\ruta-red\c\GCMS\Msexe\masont_1.sequence.xml"},
-                "CS-4289": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 27,
-                            "excel":rf"\\ruta-red\d\CS-4289-MS-FID\Data\HS-FID\{año}",
-                            "excel2":rf"\\ruta-red\d\CS-4289-MS-FID\Data\HS-MS\{año}",
+                "EQ-014": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 27,
+                            "excel":rf"\\ruta-red\d\EQ-014-MS-FID\Data\HS-FID\{año}",
+                            "excel2":rf"\\ruta-red\d\EQ-014-MS-FID\Data\HS-MS\{año}",
                             "xml":r"\\ruta-red\d\MassHunter\GCMS\1\sequence\HS_FID.sequence.xml",
                             "xml2":r"\\ruta-red\d\MassHunter\GCMS\1\sequence\HS_MS.sequence.xml"},
-                "CS-4714": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 24,
-                            "excel":rf"\\ruta-red\d\CS-4714-MS-FID\Data\FID\{año}",
-                            "excel2":rf"\\ruta-red\d\CS-4714-MS-FID\Data\MS\{año}",
-                            "xml":r"\\ruta-red\d\CS-4714-MS-FID\Secuencias\HS_FID.sequence.xml",
-                            "xml2":r"\\ruta-red\d\CS-4714-MS-FID\Secuencias\HS_MS.sequence.xml"},
-                "CS-4870": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 29,
-                            "excel":rf"\\ruta-red\d\CS-4870\DATA\{año}",
-                            "xml":r"\\ruta-red\d\CS-4870\sequence\CGM-026-a.sequence.xml"},
-                "CS-4940": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 27,
-                            "excel":rf"\\ruta-red\d\CS-4940\Data\{año}",
-                            "xml":r"\\ruta-red\d\CS-4940\Secuencias\Secuencia-CGM-040-a.sequence.xml"},
-                "CS-5044": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 23,
-                            "excel":rf"\\ruta-red\d\CS-5044\Data\{año}",
-                            "xml":r"\\ruta-red\d\CS-5044\Secuencias\CGM-040-a.sequence.xml",
-                            "xml2":r"\\ruta-red\d\CS-5044\Secuencias\CGM-040-n.sequence.xml"},
-                "CS-5045": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 23,
-                            "excel":rf"\\ruta-red\d\CS-5045-SPME-HS\Data\{año}\HS",
-                            "excel2":rf"\\ruta-red\d\CS-5045-SPME-HS\Data\{año}\SPME",
-                            "xml":r"\\ruta-red\D\CS-5045-SPME-HS\Secuencias\Secuencia-CGM-040-a.sequence.xml",
-                            "xml2":r"\\ruta-red\D\CS-5045-SPME-HS\Secuencias\Secuencia-CGM-038-a.sequence.xml"},
-                "CS-5142": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 27,
-                            "excel":rf"\\ruta-red\d\CS-5142-HS-MS\Data\{año}",
-                            "xml":r"\\ruta-red\D\CS-5142-HS-MS\Secuencias\Secuencia-CGM-040-a.sequence.xml",
-                            "xml2":r"\\ruta-red\D\CS-5142-HS-MS\Secuencias\Secuencia-CGM-040-n.sequence.xml"}
+                "EQ-015": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 24,
+                            "excel":rf"\\ruta-red\d\EQ-015-MS-FID\Data\FID\{año}",
+                            "excel2":rf"\\ruta-red\d\EQ-015-MS-FID\Data\MS\{año}",
+                            "xml":r"\\ruta-red\d\EQ-015-MS-FID\Secuencias\HS_FID.sequence.xml",
+                            "xml2":r"\\ruta-red\d\EQ-015-MS-FID\Secuencias\HS_MS.sequence.xml"},
+                "EQ-016": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 29,
+                            "excel":rf"\\ruta-red\d\EQ-016\DATA\{año}",
+                            "xml":r"\\ruta-red\d\EQ-016\sequence\CGM-026-a.sequence.xml"},
+                "EQ-017": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 27,
+                            "excel":rf"\\ruta-red\d\EQ-017\Data\{año}",
+                            "xml":r"\\ruta-red\d\EQ-017\Secuencias\Secuencia-CGM-040-a.sequence.xml"},
+                "EQ-018": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 23,
+                            "excel":rf"\\ruta-red\d\EQ-018\Data\{año}",
+                            "xml":r"\\ruta-red\d\EQ-018\Secuencias\CGM-040-a.sequence.xml",
+                            "xml2":r"\\ruta-red\d\EQ-018\Secuencias\CGM-040-n.sequence.xml"},
+                "EQ-019": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 23,
+                            "excel":rf"\\ruta-red\d\EQ-019-SPME-HS\Data\{año}\HS",
+                            "excel2":rf"\\ruta-red\d\EQ-019-SPME-HS\Data\{año}\SPME",
+                            "xml":r"\\ruta-red\D\EQ-019-SPME-HS\Secuencias\Secuencia-CGM-040-a.sequence.xml",
+                            "xml2":r"\\ruta-red\D\EQ-019-SPME-HS\Secuencias\Secuencia-CGM-038-a.sequence.xml"},
+                "EQ-020": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 27,
+                            "excel":rf"\\ruta-red\d\EQ-020-HS-MS\Data\{año}",
+                            "xml":r"\\ruta-red\D\EQ-020-HS-MS\Secuencias\Secuencia-CGM-040-a.sequence.xml",
+                            "xml2":r"\\ruta-red\D\EQ-020-HS-MS\Secuencias\Secuencia-CGM-040-n.sequence.xml"}
             }
         }
     elif seccion == "Fenoles":
         return {
             "rutas": {
-                "CS-4078": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": tiempo4078,
+                "EQ-021": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": tiempo4078,
                             "xml":r"\\ruta-red\c\GCMS\Msexe\masont_1.sequence.xml",
-                            "local": rf"\\ruta-red\d\CS-4078-3195\Data\{año}\{metodo}"}, 
-                "CS-4252": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 18,
-                            "xml":r"\\ruta-red\d\CS-4252-CG-MS\Secuencias\CGM-039-a.sequence.xml",
-                            "local": rf"\\ruta-red\d\CS-4252-CG-MS\DATA\FENOLES\{año}"}
+                            "local": rf"\\ruta-red\d\EQ-021-3195\Data\{año}\{metodo}"}, 
+                "EQ-022": {"ruta": r"\\ruta-red\d\MassHunter\GCMS\1", "tiempo_inyeccion": 18,
+                            "xml":r"\\ruta-red\d\EQ-022-CG-MS\Secuencias\CGM-039-a.sequence.xml",
+                            "local": rf"\\ruta-red\d\EQ-022-CG-MS\DATA\FENOLES\{año}"}
             }
         }
     elif seccion == "Hidrocarburos":
         return {
             "rutas": {
-                "CS-4307": {"ruta": rf"\\ruta-red\d\CDSProjects\LTM\Results\{año}", "tiempo_inyeccion": 8,
+                "EQ-023": {"ruta": rf"\\ruta-red\d\CDSProjects\LTM\Results\{año}", "tiempo_inyeccion": 8,
                             "log":r"\\ruta-red\c\ProgramData\Agilent\LogFiles\AcquisitionServer-16.log"}, 
-                "CS-4719": {"ruta": rf"\\ruta-red\d\CDSProjects\LTM2\Results\{año}", "tiempo_inyeccion": 8,
+                "EQ-024": {"ruta": rf"\\ruta-red\d\CDSProjects\LTM2\Results\{año}", "tiempo_inyeccion": 8,
                             "log":r"\\ruta-red\c\ProgramData\Agilent\LogFiles\AcquisitionServer-16.log"}
             }
         }
     elif seccion == "Líquidos":
         return {
             "rutas": {
-                "CS-1208": {"ruta": rf"\\ruta-red\d\Analyst Data\Projects\{año}", "tiempo_inyeccion": tiempo_liq},
-                "CS-3321": {"ruta": rf"\\ruta-red\D_CS-3321\Analyst Data\Projects\{año}", "tiempo_inyeccion": tiempo_liq},
-                "CS-4266": {"ruta": rf"\\ruta-red\D_CS-4266\SCIEX OS Data\{metodo_liquidos} ({año})\Data", "tiempo_inyeccion": tiempo_liq},
-                "CS-5105": {"ruta": rf"\\ruta-red\d\SCIEX OS Data\{metodo_liquidos} ({año})\Data", "tiempo_inyeccion": tiempo_liq},
-                "CS-5196": {"ruta": rf"\\ruta-red\d\SCIEX OS Data\{metodo_liquidos} ({año})\Data", "tiempo_inyeccion": tiempo_liq}
+                "EQ-025": {"ruta": rf"\\ruta-red\d\Analyst Data\Projects\{año}", "tiempo_inyeccion": tiempo_liq},
+                "EQ-026": {"ruta": rf"\\ruta-red\D_EQ-026\Analyst Data\Projects\{año}", "tiempo_inyeccion": tiempo_liq},
+                "EQ-027": {"ruta": rf"\\ruta-red\D_EQ-027\SCIEX OS Data\{metodo_liquidos} ({año})\Data", "tiempo_inyeccion": tiempo_liq},
+                "EQ-028": {"ruta": rf"\\ruta-red\d\SCIEX OS Data\{metodo_liquidos} ({año})\Data", "tiempo_inyeccion": tiempo_liq},
+                "EQ-029": {"ruta": rf"\\ruta-red\d\SCIEX OS Data\{metodo_liquidos} ({año})\Data", "tiempo_inyeccion": tiempo_liq}
             }
         }
     return {"rutas": {}}
@@ -406,7 +250,7 @@ def buscar_errores(ruta, equipo, error_anterior, errores):
     
     Args:
         ruta (str): Ruta al archivo mslogbk.htm.
-        equipo (str): Identificador del equipo (ej: "CS-4078").
+        equipo (str): Identificador del equipo (ej: "EQ-021").
         error_anterior (dict): Registro de errores previos para evitar duplicados.
         errores (list): Lista acumulativa de errores encontrados.
     
@@ -694,7 +538,7 @@ def ejecutar_verificacion(secciones, ventana_estado, text_estado):
             idactual = ""
             saltadas = None
             errores = []
-            if equipo != "CS-4078" and seccion == "Fenoles": metodo = None
+            if equipo != "EQ-021" and seccion == "Fenoles": metodo = None
 
             hora_creacion = datetime.strptime("01-01-25", "%d-%m-%y")
             ruta = info["ruta"]  # Obtener la ruta del equipo
@@ -788,7 +632,7 @@ def ejecutar_verificacion(secciones, ventana_estado, text_estado):
                     for equipo2, info2 in datos_seccion["rutas"].items():
                         if equipo2 == equipo:
                             ruta_completa = info2["ruta"]
-                    if equipo == "CS-1208" or equipo == "CS-3321":
+                    if equipo == "EQ-025" or equipo == "EQ-026":
                         ruta_local = info["ruta"]
                         ruta_completa = ruta_local
                         ultima_carpeta = encontrar_carpeta_reciente(ruta_local)
@@ -859,7 +703,7 @@ def ejecutar_verificacion(secciones, ventana_estado, text_estado):
                                 last_data_file_name = None
                             
                             # Extraer la fecha del nombre del archivo
-                            if seccion == "Twister" and equipo != "CS-5042":
+                            if seccion == "Twister" and equipo != "EQ-011":
                                 fecha_batch = "01-01-2025"
                             else:
                                 fecha_batch = "01-01-25"
@@ -1193,49 +1037,11 @@ def crear_interfaz():
 
     def iniciar_monitoreo():
         global text_estado_global
-        secciones_seleccionadas = [seccion for seccion, var in vars_secciones.items() if var.get()]
-        if not secciones_seleccionadas:
-            messagebox.showwarning("Advertencia", "Por favor selecciona al menos una sección")
-            return
-        
-        ventana_estado = tk.Toplevel(ventana)
-        ventana_estado.title("Estado de Equipos")
-
-        text_estado = tk.Text(ventana_estado, height=52, width=75,wrap=tk.WORD, font=('Consolas', 10))
-        text_estado_global = text_estado
-
-        text_estado.tag_configure("rojo", foreground="red")
-        text_estado.tag_configure("verde", foreground="green")
-        text_estado.tag_configure("azul", foreground="blue")
-        text_estado.tag_configure("naranja", foreground="orange")
-        text_estado.tag_configure("titulo", font=("Arial", 11, "bold")) 
-        text_estado.pack(pady=20)
-
-        frame_botones = ttk.Frame(ventana_estado)
-        frame_botones.pack(pady=5)
-
-        btn_actualizar = ttk.Button(frame_botones, text="Actualizar Ahora", command=lambda: ejecutar_verificacion(secciones_seleccionadas, ventana_estado, text_estado))
-        btn_actualizar.pack(side=tk.LEFT, padx=5)
-
-        btn_exportar = ttk.Button(frame_botones,text="Exportar a Excel",command=exportar_a_excel)
-        btn_exportar.pack(side=tk.LEFT, padx=5)
-
-        ejecutar_verificacion(secciones_seleccionadas, ventana_estado, text_estado)
-
-    btn_frame = ttk.Frame(frame_centro)
-    btn_frame.pack(fill=tk.X, pady=10)
-
-    btn_iniciar = ttk.Button(btn_frame, text="Iniciar Monitoreo", command=iniciar_monitoreo)
-    btn_iniciar.pack(side=tk.LEFT, padx=5)
-
-    btn_salir = ttk.Button(btn_frame, text="Salir", command=ventana.quit)
-    btn_salir.pack(side=tk.RIGHT, padx=5)
-
-    style = ttk.Style()
-    style.configure('TButton', font=('Arial', 10))
-    style.configure('TCheckbutton', font=('Arial', 10))
-
-    ventana.mainloop()
+        "Función censurada, para saber más, contacta conmigo."
+        ventana = tk.Tk()
+        ventana.title("Monitor (versión censurada)")
+        tk.Label(ventana, text="Ejemplo sin lógica real.").pack()
+        ventana.mainloop()
 
 def exportar_a_excel():
     """
