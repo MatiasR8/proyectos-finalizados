@@ -22,11 +22,8 @@ def obtener_carpeta_por_dia(fecha, ruta_mes):
     Returns:
         str: Ruta completa de la carpeta del día si existe, None si no.
     """
-    dia_formato = fecha.strftime("Secuencia %Y-%m-%d")
-    for carpeta in os.listdir(ruta_mes):
-        if carpeta.startswith(dia_formato):
-            return os.path.join(ruta_mes, carpeta)
-    return None
+    "Función censurada, para saber más contáctame."
+    return "01-01-2025"
 def contar_inyecciones_y_revisar_equipo(ruta_base, fecha, equipo):
     """
     Cuenta inyecciones y verifica el estado de un equipo en un día específico.
@@ -34,7 +31,7 @@ def contar_inyecciones_y_revisar_equipo(ruta_base, fecha, equipo):
     Args:
         ruta_base (str): Ruta base donde buscar (ej: "Ruta\2024").
         fecha (str): Fecha en formato "DD-MM-YYYY".
-        equipo (str): Identificador del equipo (ej: "CS-4078").
+        equipo (str): Identificador del equipo (ej: "EQ-022").
     
     Returns:
         tuple: (conteo_inyecciones, ultima_hora, equipo_parado, muestras_saltadas, error)
@@ -364,8 +361,8 @@ def main():
 
         if seccion == "Hidrocarburos":
             rutas = {
-                "CS-4307": rf"\\d073-b73wq2rlo4\d\CDSProjects\LTM\Results\{fecha[-4:]}", 
-                "CS-4719": rf"\\Desktop-5lvhtdp\d\CDSProjects\LTM2\Results\{fecha[-4:]}", 
+                "EQ-001": rf"\\d073-b73wq2rlo4\d\CDSProjects\LTM\Results\{fecha[-4:]}", 
+                "EQ-002": rf"\\Desktop-5lvhtdp\d\CDSProjects\LTM2\Results\{fecha[-4:]}", 
             }
             tiempo_inyeccion = datetime.timedelta(minutes=7)
             resultados = []
@@ -396,39 +393,39 @@ def main():
         else:
             if seccion == "Semivol":
                 rutas = {
-                    "CS-4332": rf"\\ruta-red\d\Data file\{fecha[-4:]}", 
-                    "CS-4716": rf"\\ruta-red\d\DataFile\{fecha[-4:]}", 
-                    "CS-4939": rf"\\ruta-red\d (qqq-3)\Data file\{fecha[-4:]}", 
-                    "CS-5144": rf"\\ruta-red\d\Data\{fecha[-4:]}"
+                    "EQ-003": rf"\\ruta-red\d\Data file\{fecha[-4:]}", 
+                    "EQ-004": rf"\\ruta-red\d\DataFile\{fecha[-4:]}", 
+                    "EQ-005": rf"\\ruta-red\d (qqq-3)\Data file\{fecha[-4:]}", 
+                    "EQ-006": rf"\\ruta-red\d\Data\{fecha[-4:]}"
                 }
                 tiempo_inyeccion = datetime.timedelta(minutes=30)
             if seccion == "Twister":
                 rutas = {
-                    "CS-1037": rf"\\ruta-red\d\Data File\Secuencias CGM-019-a\Secuencias {fecha[-4:]}", 
-                    "CS-1342": rf"\\ruta-red\D\Secuencias CGM-019-a\Secuencias {fecha[-4:]}", 
-                    "CS-1804": rf"\\ruta-red\d\Data file\Secuencias CGM-031-a\Secuencias {fecha[-4:]}", 
-                    "CS-3013": rf"\\ruta-red\d (cs-3013)\Data file\Secuencias CGM-031-a\Secuencias {fecha[-4:]}",
-                    "CS-4658": rf"\\ruta-red\d\Secuencias {fecha[-4:]}",
-                    "CS-5002": rf"\\ruta-red\d\DATA FILE\Secuencias {fecha[-4:]}"
+                    "EQ-007": rf"\\ruta-red\d\Data File\Secuencias CGM-019-a\Secuencias {fecha[-4:]}", 
+                    "EQ-008": rf"\\ruta-red\D\Secuencias CGM-019-a\Secuencias {fecha[-4:]}", 
+                    "EQ-009": rf"\\ruta-red\d\Data file\Secuencias CGM-031-a\Secuencias {fecha[-4:]}", 
+                    "EQ-010": rf"\\ruta-red\d (EQ-010)\Data file\Secuencias CGM-031-a\Secuencias {fecha[-4:]}",
+                    "EQ-011": rf"\\ruta-red\d\Secuencias {fecha[-4:]}",
+                    "EQ-012": rf"\\ruta-red\d\DATA FILE\Secuencias {fecha[-4:]}"
                 }
                 tiempo_inyeccion = datetime.timedelta(minutes=72)   
             if seccion == "Volátiles":
                 rutas = {
-                    "CS-3194": [rf"\\ruta-red\D\Agilent 3194-3195\Data\{fecha[-4:]}\HS", rf"\\ruta-red\D\Agilent 3194-3195\Data\{fecha[-4:]}\SPME"],
-                    "CS-4102": rf"\\ruta-red\cs-4101-4102\Data\{fecha[-4:]}",
-                    "CS-4289": [rf"\\ruta-red\d\CS-4289-MS-FID\Data\HS-FID\{fecha[-4:]}", rf"\\ruta-red\d\CS-4289-MS-FID\Data\HS-MS\{fecha[-4:]}"],
-                    "CS-4714": [rf"\\ruta-red\d\CS-4714-MS-FID\Data\FID\{fecha[-4:]}", rf"\\ruta-red\d\CS-4714-MS-FID\Data\MS\{fecha[-4:]}"], 
-                    "CS-4870": rf"\\ruta-red\d\CS-4870\DATA\{fecha[-4:]}",  
-                    "CS-4940": rf"\\ruta-red\d\CS-4940\Data\{fecha[-4:]}",           
-                    "CS-5044": rf"\\ruta-red\d\CS-5044\Data\{fecha[-4:]}",
-                    "CS-5045": [rf"\\ruta-red\d\CS-5045-SPME-HS\Data\{fecha[-4:]}\HS", rf"\\ruta-red\d\CS-5045-SPME-HS\Data\{fecha[-4:]}\SPME"],
-                    "CS-5142": rf"\\ruta-red\d\CS-5142-HS-MS\Data\{fecha[-4:]}"
+                    "EQ-013": [rf"\\ruta-red\D\Agilent 3194-3195\Data\{fecha[-4:]}\HS", rf"\\ruta-red\D\Agilent 3194-3195\Data\{fecha[-4:]}\SPME"],
+                    "EQ-014": rf"\\ruta-red\EQ-014\Data\{fecha[-4:]}",
+                    "EQ-015": [rf"\\ruta-red\d\EQ-015-MS-FID\Data\HS-FID\{fecha[-4:]}", rf"\\ruta-red\d\EQ-015-MS-FID\Data\HS-MS\{fecha[-4:]}"],
+                    "EQ-016": [rf"\\ruta-red\d\EQ-016-MS-FID\Data\FID\{fecha[-4:]}", rf"\\ruta-red\d\EQ-016-MS-FID\Data\MS\{fecha[-4:]}"], 
+                    "EQ-017": rf"\\ruta-red\d\EQ-017\DATA\{fecha[-4:]}",  
+                    "EQ-018": rf"\\ruta-red\d\EQ-018\Data\{fecha[-4:]}",           
+                    "EQ-019": rf"\\ruta-red\d\EQ-019\Data\{fecha[-4:]}",
+                    "EQ-020": [rf"\\ruta-red\d\EQ-020-SPME-HS\Data\{fecha[-4:]}\HS", rf"\\ruta-red\d\EQ-020-SPME-HS\Data\{fecha[-4:]}\SPME"],
+                    "EQ-021": rf"\\ruta-red\d\EQ-021-HS-MS\Data\{fecha[-4:]}"
                 }
                 tiempo_inyeccion = datetime.timedelta(minutes=27)
             if seccion == "Fenoles":
                 rutas = {
-                    "CS-4078": [rf"\\ruta-red\d\CS-4078-3195\Data\{fecha[-4:]}\CGM-036-a",rf"\\ruta-red\d\CS-4078-3195\Data\{fecha[-4:]}\CGM-038-a",rf"\\ruta-red\d\CS-4078-3195\Data\{fecha[-4:]}\CGM-020-a"], 
-                    "CS-4252": rf"\\ruta-red\d\CS-4252-CG-MS\DATA\FENOLES\{fecha[-4:]}"
+                    "EQ-022": [rf"\\ruta-red\d\EQ-022-3195\Data\{fecha[-4:]}\CGM-036-a",rf"\\ruta-red\d\EQ-022-3195\Data\{fecha[-4:]}\CGM-038-a",rf"\\ruta-red\d\EQ-022-3195\Data\{fecha[-4:]}\CGM-020-a"], 
+                    "EQ-023": rf"\\ruta-red\d\EQ-023-CG-MS\DATA\FENOLES\{fecha[-4:]}"
                 }
                 tiempo_inyeccion = datetime.timedelta(minutes=33)
             resultados = []
@@ -456,53 +453,7 @@ def main():
                                 mensaje_error = error
 
                     # Crear un mensaje consolidado para todas las subrutas
-                    mensaje = f"{nombre_ruta}:\n"
-                    mensaje += f"Inyecciones realizadas: {conteo_total}\n"
-                    if ultima_inyeccion_hora:
-                        mensaje += f"Hora de la última inyección: {ultima_inyeccion_hora.strftime('%H:%M:%S')}\n"
-                        hora_actual = datetime.datetime.now()
-                        hora_7am = datetime.datetime.combine(datetime.datetime.strptime(fecha, "%d-%m-%Y") + datetime.timedelta(days=1), datetime.time(7, 0))
-                        if hora_actual < (ultima_inyeccion_hora + tiempo_inyeccion) and equipo_parado:
-                            mensaje += "El equipo está inyectando.\n"                    
-                        elif equipo_parado:
-                            mensaje += "AVISO: EL EQUIPO SE HA PARADO.\n"                       
-                        elif hora_actual < ultima_inyeccion_hora + tiempo_inyeccion:
-                            mensaje += "El equipo está inyectando.\n"
-                        elif hora_7am - ultima_inyeccion_hora > tiempo_inyeccion:
-                            mensaje += "El equipo ha acabado de inyectar.\n"
-                        else:
-                            mensaje += "El equipo está funcionando correctamente.\n"
-                        if seccion == "Volátiles" and muestras_saltadas:
-                            mensaje += f"Muestras saltadas: {', '.join(muestras_saltadas)}\n"
-                    else:
-                        mensaje += "No se encontraron inyecciones en el rango de tiempo.\n"
-                    if mensaje_error:
-                        mensaje += f"Error: {mensaje_error}\n"
-                    resultados.append(mensaje)
-
-                else:
-                    conteo, ultima_hora, equipo_parado, muestras_saltadas, error = contar_inyecciones_y_revisar_equipo(ruta, fecha, seccion)
-                    mensaje = f"{nombre_ruta}:\n"
-                    if conteo is not None:
-                        mensaje += f"Inyecciones realizadas: {conteo}\n"
-                        if ultima_hora:
-                            mensaje += f"Hora de la última inyección: {ultima_hora.strftime('%H:%M:%S')}\n"
-                            hora_actual = datetime.datetime.now()
-                            hora_7am = datetime.datetime.combine(datetime.datetime.strptime(fecha, "%d-%m-%Y") + datetime.timedelta(days=1), datetime.time(7, 0))
-                            if hora_actual < (ultima_hora + tiempo_inyeccion) and equipo_parado:
-                                mensaje += "El equipo está inyectando.\n"                       
-                            elif equipo_parado:
-                                mensaje += "AVISO: EL EQUIPO SE HA PARADO.\n"                            
-                            elif hora_7am - ultima_hora > tiempo_inyeccion:
-                                mensaje += "El equipo ha acabado de inyectar.\n"
-                            else:
-                                mensaje += "El equipo está funcionando correctamente.\n"
-                            if seccion == "Volátiles" and muestras_saltadas:
-                                mensaje += f"Muestras saltadas: {', '.join(muestras_saltadas)}\n"
-                        else:
-                            mensaje += "No se encontraron inyecciones en el rango de tiempo.\n"
-                    if error:
-                        mensaje += f"Error: {error}\n"
+                    "Lógica del mensaje censurada, para saber más contáctame."
                     resultados.append(mensaje)
 
         mensaje_final = "\n".join(resultados)
